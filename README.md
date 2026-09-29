@@ -1,8 +1,9 @@
-# ShotCraft Studio
+# 知识博主炫酷视频桌面工作台
 
 > **给知识视频创作者的本地剪辑工作台**<br>
 > 从配音、字幕、网页证据到可编辑镜头和 MP4 导出，在一条多轨时间线上完成。
-
+> 个人自用本地ai工具分享视频制作平台，花了codex pro 200💲额度纯手搓出来的平台
+> 免费开源大家用，杜绝付费割韭菜，有什么需要优化的联系我修改
 **macOS · 本地项目与素材 · 216 个可编辑镜头 · Remotion · 豆包配音 · MP4 导出**
 
 [English](README_EN.md) · [Agent Skill 使用说明](SKILL.md) · [第三方许可](THIRD_PARTY_NOTICES.md)
