@@ -26,7 +26,7 @@ STUDIO_DATA="$HOME/Movies/ShotCraft Studio" STUDIO_PORT=5296 node server/server.
 
 ## 演示视频与界面截图
 
-<video src="https://raw.githubusercontent.com/zkm7333/cool-video-workbench/main/docs/media/workbench-demo.mp4" controls width="100%"></video>
+https://github.com/user-attachments/assets/60a858d8-31bf-4d38-95f0-c624dfcedd6a
 
 [打开或下载演示视频 MP4](docs/media/workbench-demo.mp4)
 

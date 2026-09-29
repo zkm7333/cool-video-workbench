@@ -26,7 +26,7 @@ Requirements: macOS, Node.js 20 or later, npm, and Chromium/Chrome for video ren
 
 ## Demo video and screenshots
 
-<video src="https://raw.githubusercontent.com/zkm7333/cool-video-workbench/main/docs/media/workbench-demo.mp4" controls width="100%"></video>
+https://github.com/user-attachments/assets/60a858d8-31bf-4d38-95f0-c624dfcedd6a
 
 [Open or download the MP4 demo](docs/media/workbench-demo.mp4)
 
