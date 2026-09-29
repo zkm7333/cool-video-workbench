@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {generateBeats,validateBeats,normalize} from '../src/director/model.ts';
+const text='看这里。点击按钮。提升50%。';
+const beats=generateBeats(text,9,[2.4,5.1]);
+assert.equal(beats.length,3);assert.deepEqual(beats.map(b=>b.cardId),['manual-title','manual-web','manual-number']);assert(beats.every(b=>b.timing==='estimated'));validateBeats(beats,9);
+const words=[{text:'看这里',start:.1,end:2},{text:'点击按钮',start:3,end:5},{text:'提升50',start:6,end:8}];
+const aligned=generateBeats(text,9,[],words);assert(aligned.every(b=>b.timing==='aligned'));assert.equal(aligned[0].end,2);assert.equal(aligned[1].end,5);
+assert(generateBeats('其他文案。',9,[],words).every(b=>b.timing==='estimated'));
+assert(generateBeats(text,9,[],[{text:normalize(text),start:0,end:99}]).every(b=>b.timing==='estimated'));
+assert.throws(()=>validateBeats([{...beats[0],end:4},{...beats[1],start:3}],9),/重叠/);
+assert.throws(()=>validateBeats([{...beats[0],end:10}],9),/范围/);
+assert.throws(()=>generateBeats('一句。二句。',.1,[]));
+console.log('PASS sentence classification, estimated/aligned provenance, mismatched words, overlap/range rejection');
+assert.equal(aligned[0].props.trigger,.1);
+assert.equal(aligned[1].props.trigger,1);
+assert.equal(aligned[2].cue.at,6);
+console.log('PASS aligned action cue uses word time relative to scene start');

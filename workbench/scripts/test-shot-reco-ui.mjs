@@ -1,0 +1,30 @@
+import {chromium} from 'playwright-core';
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
+try{
+ const page=await browser.newPage({viewport:{width:1440,height:900}});const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('http://127.0.0.1:5318');await page.locator('.studio-rail').getByRole('button',{name:'逐句导演',exact:true}).click();
+ await page.getByRole('textbox',{name:'导演文案'}).fill('一个新产品。点击按钮查看结果。与之前相比快了50%。');
+ await page.locator('.director-inputs input[type=file]').setInputFiles('/private/tmp/director-test.wav');
+ await page.waitForFunction(()=>document.querySelector('.director-inputs audio')?.getAttribute('src')?.includes('director-test'));
+ await page.getByRole('button',{name:'生成逐句导演建议'}).click();await page.waitForFunction(()=>document.querySelectorAll('.director-beat').length===3);
+ const recommended=await page.locator('.director-beat select[aria-label$="镜头"]').evaluateAll(es=>es.map(e=>e.value));
+ assert.deepEqual(recommended,['demo:BrandFrameSnap','demo:CursorFlyover','demo:BeforeAfterSliderScrub']);
+ const second=page.locator('.director-beat').nth(1);await second.getByRole('button',{name:'浏览全部镜头'}).click();
+ await page.getByRole('dialog',{name:'从镜头库选择'}).waitFor();
+ const count=await page.locator('.director-shot-all .director-shot-cell').count();assert(count>=200,`only ${count} cards`);
+ await page.getByRole('textbox',{name:'搜索镜头库'}).fill('论文卡叠压');
+ assert.equal(await page.locator('.director-shot-all .director-shot-cell').count(),1);
+ await page.getByRole('button',{name:'选择镜头 论文卡叠压'}).click();
+ assert.equal(await page.getByRole('combobox',{name:'第2句镜头'}).inputValue(),'demo:ResearchCardStackScroll');
+ await second.getByRole('button',{name:'预览镜头'}).click();await page.getByRole('dialog',{name:'导演镜头预览'}).waitFor();await page.getByRole('button',{name:'关闭预览'}).click();
+ await page.getByRole('button',{name:'应用勾选镜头与配音到时间线'}).click();await page.waitForFunction(()=>document.querySelectorAll('.tl-row').length===5);
+ await page.waitForTimeout(1100);
+ const project=await(await page.request.get('http://127.0.0.1:5318/api/autosave')).json();
+ assert.deepEqual(project.tracks[0].clips.map(c=>c.cardId),['demo:BrandFrameSnap','demo:ResearchCardStackScroll','demo:BeforeAfterSliderScrub']);
+ project.width=640;project.height=360;project.tracks=project.tracks.slice(0,2);
+ fs.writeFileSync('/private/tmp/shot-reco-export.json',JSON.stringify({project}));
+ assert.deepEqual(errors,[]);
+ console.log(JSON.stringify({recommended,catalogCount:count,manualOverride:project.tracks[0].clips[1].cardId,applied:project.tracks[0].clips.length,pageErrors:errors}));
+}finally{await browser.close()}

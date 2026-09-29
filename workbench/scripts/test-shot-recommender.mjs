@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {rankShots,shotRole} from '../src/director/shot-recommender.ts';
+const item=(id,category,mediaSlots=1)=>({id,name:id,category,summary:'',mediaSlots,duration:5,editableFields:5});
+const c=[item('demo:SpotlightHeroCard','开场与品牌',2),item('demo:BrandFrameSnap','开场与品牌'),item('demo:CursorFlyover','运镜与空间',5),item('demo:CursorPerformancePunchIn','交互与功能演示'),item('demo:BeforeAfterSliderScrub','数据与指标'),item('demo:BrakeReticleLock','数据与指标'),item('demo:ResearchCardStackScroll','界面登场与陈列'),item('demo:LogoShrinkWordmarkLockup','收尾'),item('manual-title','可编辑镜头',0)];
+assert.equal(shotRole('点击这里',1,3),'interaction');
+assert.equal(rankShots('这是一款新产品。',0,3,4,c)[0].cardId,'demo:SpotlightHeroCard');
+assert.equal(rankShots('点击按钮打开结果。',1,3,4,c)[0].cardId,'demo:CursorFlyover');
+assert.equal(rankShots('和之前相比变化很大。',1,3,4,c)[0].cardId,'demo:BeforeAfterSliderScrub');
+assert.equal(rankShots('效率提升50%。',1,3,4,c)[0].cardId,'demo:BrakeReticleLock');
+assert.equal(rankShots('现在就开始。',2,3,4,c)[0].cardId,'demo:LogoShrinkWordmarkLockup');
+assert.notEqual(rankShots('一个页面。',0,3,4,c,['demo:SpotlightHeroCard'])[0].cardId,'demo:SpotlightHeroCard');
+assert(rankShots('查看结果。',1,3,4,c).every(x=>c.some(y=>y.id===x.cardId)));
+console.log('PASS intent mapping, editable real catalog IDs, duration/variety ranking');

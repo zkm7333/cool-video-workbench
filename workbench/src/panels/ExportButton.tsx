@@ -1,0 +1,13 @@
+import React,{useEffect,useState} from 'react';
+import {api,notify} from '../desktop-api';
+import {useStore} from '../store';
+import {Modal} from '../ui/Modal';
+import {Icon} from '../ui/Icon';
+type Job={id:string;status:'running'|'done'|'error';progress:number;stage:string;lastLine:string;output:string};
+export const ExportButton:React.FC=()=>{
+ const [job,setJob]=useState<Job|null>(null),[open,setOpen]=useState(false),[starting,setStarting]=useState(false),[error,setError]=useState('');
+ useEffect(()=>{api('exports').then((jobs:Job[])=>{if(jobs[0])setJob(jobs[0])}).catch(()=>{})},[]);
+ useEffect(()=>{if(job?.status!=='running')return;let active=true;const poll=async()=>{try{const j=await api('export/'+job.id);if(active){setJob(j);setError('')}}catch(e){if(active)setError('读取导出进度失败，将自动重试：'+String(e))}};const t=setInterval(poll,1200);void poll();return()=>{active=false;clearInterval(t)}},[job?.id,job?.status]);
+ const start=async()=>{setStarting(true);setError('');setOpen(true);try{const r=await api('export',{project:useStore.getState().project});setJob({id:r.id,status:'running',progress:0,stage:'准备素材',lastLine:'',output:''})}catch(e){setError(String(e))}finally{setStarting(false)}};
+ return <><button className="btn primary" disabled={starting} onClick={()=>{setOpen(true);if(!job)void start()}}><Icon name="download" size={16}/>{starting?'正在启动…':job?.status==='running'?`导出中 ${Math.round(job.progress*100)}%`:'导出成片'}</button>{open&&<Modal label="导出视频" className="export-dialog" onClose={()=>setOpen(false)}><div className="dialog-heading"><div><b>导出视频</b><span>MP4 成片保存在本机导出文件夹</span></div><button className="icon-button" aria-label="关闭导出窗口" onClick={()=>setOpen(false)}><Icon name="close"/></button></div><div className="export-body">{error&&<p className="asset-picker-error" role="alert">{error}</p>}{job?.status==='running'&&<><div className="export-stage"><b>{job.stage}</b><span>{Math.round(job.progress*100)}%</span></div><progress max={1} value={job.progress}/><p className="dim">渲染期间请保持工作台打开。可以关闭此窗口继续编辑。</p></>}{job?.status==='done'&&<><div className="export-success"><Icon name="check" size={24}/><h3>视频已导出</h3></div><p className="export-path">{job.output}</p><button className="btn primary" onClick={()=>api('export/'+job.id+'/reveal',{}).catch(e=>notify(String(e)))}><Icon name="folder" size={17}/>在 Finder 中显示</button></>}{job?.status==='error'&&<div role="alert"><h3>导出未完成</h3><p>可以重试；错误详情与日志已保存在导出文件夹。</p><details open><summary>错误详情</summary><pre>{job.lastLine}</pre></details></div>}{job?.status!=='running'&&<button className="btn" disabled={starting} onClick={start}>{starting?'正在启动…':job?.status==='done'?'导出当前工程':job?.status==='error'?'重新导出':'开始导出'}</button>}</div></Modal>}</>;
+};

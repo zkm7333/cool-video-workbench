@@ -1,0 +1,37 @@
+import http from 'node:http';
+import {chromium} from 'playwright-core';
+import assert from 'node:assert/strict';
+const fixture=http.createServer((req,res)=>{res.setHeader('Content-Type','text/html');res.end('<html><body style="margin:0"><div style="height:600px;background:blue">TOP</div><div style="height:600px;background:rgb(255,0,0)">CUSTOM TARGET</div><div style="height:600px;background:green">BOTTOM</div></body></html>')});
+await new Promise(r=>fixture.listen(5315,'127.0.0.1',r));
+const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
+try {
+ const page=await browser.newPage({viewport:{width:1440,height:1000}});
+ await page.goto('http://127.0.0.1:5314');
+ await page.locator('.studio-rail').getByRole('button',{name:'网页采集',exact:true}).click();
+ await page.getByRole('button',{name:'打开网页截取'}).click();
+ await page.getByRole('textbox',{name:'素材网页地址'}).fill('http://127.0.0.1:5315');
+ await page.getByRole('button',{name:'加载网页预览'}).click();
+ await page.waitForFunction(()=>document.querySelector('.web-crop-surface img')?.naturalWidth>0);
+ await page.locator('.web-capture-preview').evaluate(e=>e.scrollTop=430);
+ const r=await page.locator('.web-capture-preview').boundingBox();
+ await page.mouse.move(r.x+40,r.y+45);await page.mouse.down();await page.mouse.move(r.x+240,r.y+150,{steps:10});await page.mouse.up();
+ const y=Number(await page.getByRole('spinbutton',{name:'截取顶部 Y'}).inputValue());assert(y>1000,`Scrolled crop y ${y}`);
+ for(const [label,value] of [['左侧 X',100],['顶部 Y',1400],['宽度',400],['高度',200]])await page.getByRole('spinbutton',{name:'截取'+label}).fill(String(value));
+ const saved=page.waitForResponse(r=>r.url().includes('/api/assets?')&&r.request().method()==='POST');
+ await page.getByRole('button',{name:'截取选区并存入素材库'}).click();
+ const asset=await (await saved).json();const file=await page.request.get('http://127.0.0.1:5314/'+asset.file);const png=await file.body();
+ assert.equal(png.readUInt32BE(16),400);assert.equal(png.readUInt32BE(20),200);
+ const pixel=await page.evaluate(async file=>{const i=new Image();i.src='/'+file;await i.decode();const c=document.createElement('canvas');c.width=i.width;c.height=i.height;const x=c.getContext('2d');x.drawImage(i,0,0);return Array.from(x.getImageData(50,50,1,1).data)},asset.file);
+ assert.deepEqual(pixel,[255,0,0,255]);
+ await page.locator('.studio-rail').getByRole('button',{name:/视频剪辑/}).click();
+ await page.locator('.clip').nth(1).click({position:{x:40,y:20}});
+ await page.getByRole('button',{name:'从网站获取',exact:true}).click();
+ await page.getByRole('textbox',{name:'素材网页地址'}).fill('http://127.0.0.1:5315');
+ await page.getByRole('button',{name:'加载网页预览'}).click();
+ await page.waitForFunction(()=>document.querySelector('.web-crop-surface img')?.naturalWidth>0);
+ for(const [label,value] of [['左侧 X',100],['顶部 Y',1400],['宽度',400],['高度',200]])await page.getByRole('spinbutton',{name:'截取'+label}).fill(String(value));
+ await page.getByRole('button',{name:'截取选区并替换',exact:true}).click();
+ await page.getByRole('dialog',{name:'截取网页自定义区域'}).waitFor({state:'hidden'});
+ assert((await page.getByAltText('当前素材').getAttribute('src')).includes('400x200'));
+ console.log(JSON.stringify({mouseCropAfterScroll:true,naturalCoordinates:true,png:[400,200],pixel,assetReplacement:true}));
+} finally {await browser.close();fixture.close()}

@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {createRecordlyBridge} from '../server/recordly.mjs';
+const exec=promisify(execFile),root=path.resolve('.');
+const data=await fs.mkdtemp(path.join(os.tmpdir(),'shotcraft-recordly-test-'));
+await fs.mkdir(path.join(data,'uploads'));
+const appPath=path.join(data,'Test Recordly.app');await fs.mkdir(path.join(appPath,'Contents/MacOS'),{recursive:true});await fs.writeFile(path.join(appPath,'Contents/MacOS/Recordly'),'fixture');
+const launches=[];let hidden={};
+const bridge=createRecordlyBridge({root,data,appPath,hidden:()=>hidden,execute:async(...args)=>launches.push(args),probe:async file=>JSON.parse((await exec(path.join(root,'bin/ffprobe'),['-v','quiet','-show_format','-show_streams','-of','json',file])).stdout)});
+const status=await bridge.status();assert.equal(status.installed,true);assert.equal(status.imports.length,0);
+await bridge.launch();assert.deepEqual(launches[0],['/usr/bin/open',['-a',appPath]]);
+const source=process.argv[2];assert(source,'Pass a valid video fixture');
+await fs.copyFile(source,path.join(status.inbox,'demo.mp4'));
+const before=await fs.readFile(path.join(status.inbox,'demo.mp4'));
+const [a,b]=await Promise.all([bridge.importExport('demo.mp4'),bridge.importExport('demo.mp4')]);
+assert.equal(a.file,b.file,'Concurrent receive must deduplicate');assert(Math.abs(a.duration-3)<.1);assert.equal(a.width,640);
+assert.deepEqual(await fs.readFile(path.join(data,a.file)),before);assert.deepEqual(await fs.readFile(path.join(status.inbox,'demo.mp4')),before,'Original export must remain intact');
+assert.equal((await bridge.status()).imports.length,1);
+hidden={[a.file]:{name:'demo'}};assert.equal((await bridge.status()).imports.length,0,'Trash must hide received media');hidden={};
+await assert.rejects(()=>bridge.importExport('../demo.mp4'));
+await fs.writeFile(path.join(status.inbox,'bad.mp4'),'not video');await assert.rejects(()=>bridge.importExport('bad.mp4'));
+await fs.symlink(source,path.join(status.inbox,'outside.mp4'));await assert.rejects(()=>bridge.importExport('outside.mp4'));
+await assert.rejects(()=>bridge.register('uploads/../../secrets.mp4','bad'));
+console.log('PASS: native launch, real media metadata, exact copy, concurrent deduplication, trash, invalid media, traversal, symlink boundaries');
+console.log('Test data:',data);
+if(process.argv[3]){
+ const gifBridge=createRecordlyBridge({root,data,execute:async(cmd,args)=>{await exec(cmd,args)},probe:async file=>JSON.parse((await exec(path.join(root,'bin/ffprobe'),['-v','quiet','-show_format','-show_streams','-of','json',file])).stdout)});
+ await fs.copyFile(process.argv[3],path.join(data,'uploads/demo.gif'));
+ const gif=await gifBridge.register('uploads/demo.gif','demo.gif');
+ assert.equal(gif.kind,'video');assert(gif.file.endsWith('.gif.mp4'));assert(Math.abs(gif.duration-3)<.2);assert(await fs.stat(path.join(data,'uploads/demo.gif')));
+ console.log('PASS: GIF animation converted to timeline-safe MP4 without removing original');
+}

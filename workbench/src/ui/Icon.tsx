@@ -1,0 +1,25 @@
+import React from 'react';
+const paths:Record<string,React.ReactNode>={
+ trash:<><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7"/></>,
+ grid:<><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></>,
+ film:<><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 4v16M17 4v16M3 9h4m-4 6h4m10-6h4m-4 6h4"/></>,
+ mic:<><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11v1a7 7 0 0 0 14 0v-1M12 19v3m-4 0h8"/></>,
+ globe:<><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/></>,
+ folder:<path d="M3 8V6a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8Z"/>,
+ image:<><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 5-5 4 4 4-6 5 7"/></>,
+ music:<><path d="M9 18V5l11-2v13M9 9l11-2"/><ellipse cx="6" cy="18" rx="3" ry="2.5"/><ellipse cx="17" cy="16" rx="3" ry="2.5"/></>,
+ palette:<><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h9"/></>,
+ search:<><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></>,
+ plus:<path d="M12 5v14M5 12h14"/>,
+ arrow:<path d="M5 12h14m-5-5 5 5-5 5"/>,
+ close:<path d="m6 6 12 12M18 6 6 18"/>,
+ star:<path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z"/>,
+ download:<><path d="M12 3v12m-5-5 5 5 5-5M4 15v5h16v-5"/></>,
+ save:<><path d="M4 3h13l4 4v14H3V3h1Zm3 0v6h10V3M7 21v-8h10v8"/></>,
+ more:<><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></>,
+ undo:<path d="M9 5 4 10l5 5M4 10h10a6 6 0 0 1 0 12"/>,
+ redo:<path d="m15 5 5 5-5 5m5-5H10a6 6 0 0 0 0 12"/>,
+ play:<path d="m8 4 12 8-12 8Z"/>,
+ check:<path d="m5 12 4 4 10-10"/>,
+};
+export const Icon:React.FC<{name:string;size?:number}>=({name,size=20})=><svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.65" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[name]||paths.grid}</svg>;

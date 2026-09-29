@@ -1,0 +1,7 @@
+import React,{useEffect,useState} from 'react';
+import {api} from '../desktop-api';
+export const VoiceSettings:React.FC=()=>{
+ const [key,setKey]=useState(''),[status,setStatus]=useState<{configured:boolean;source:string}|null>(null),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
+ useEffect(()=>{let active=true;api('voice-settings').then(s=>{if(active)setStatus(s)}).catch(e=>{if(active)setMessage(String(e))});return()=>{active=false}},[]);
+ return <details className="voice-api-settings"><summary>豆包 API 设置{status?.configured?' · 已配置':''}</summary><p className="panel-help">填写豆包语音合成服务的 API Key。只保存在这台 Mac 的私有凭证文件中，不写入工程或备份。</p><label>API Key<input aria-label="豆包语音 API Key" type="password" autoComplete="off" spellCheck={false} value={key} placeholder={status?.configured?'已配置，输入新值可替换':'粘贴语音合成 API Key'} onChange={e=>setKey(e.target.value)}/></label><button className="btn" disabled={busy||!key.trim()} onClick={async()=>{try{setBusy(true);setMessage('');setStatus(await api('voice-settings',{apiKey:key}));setKey('');setMessage('已保存到本机。可返回上方生成配音。')}catch(e){setMessage(String(e))}finally{setBusy(false)}}}>{busy?'保存中…':'保存 API Key'}</button>{status?.source==='environment'&&<p className="panel-help">当前优先使用环境变量中的密钥；这里保存的是本机备用密钥。</p>}<p className="panel-help">接口使用语音合成资源 seed-tts-2.0。已有环境变量或钥匙串凭证仍可使用。保存只检查格式，实际服务权限以生成结果为准。</p>{message&&<p role="status" className="task-message">{message}</p>}</details>;
+};

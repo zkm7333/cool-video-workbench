@@ -1,0 +1,33 @@
+import {chromium} from 'playwright-core';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
+try {
+ const page=await browser.newPage({viewport:{width:1280,height:800}});
+ await page.goto('http://127.0.0.1:5310');
+ await page.getByRole('button',{name:'视频剪辑 1',exact:true}).click();
+ const sc=page.locator('.tl-scroller');
+ const rect=await sc.boundingBox();
+ await page.mouse.move(rect.x+400,rect.y+75);
+ await page.mouse.wheel(0,400);
+ await page.waitForFunction(()=>document.querySelector('.tl-scroller').scrollLeft>=390);
+ const first=await sc.evaluate(e=>e.scrollLeft);
+ await page.mouse.wheel(300,0);
+ await page.waitForFunction(x=>document.querySelector('.tl-scroller').scrollLeft>x,first);
+ const second=await sc.evaluate(e=>e.scrollLeft);
+ const slider=page.getByRole('slider',{name:'时间线左右移动'});
+ await slider.focus();await page.keyboard.press('End');
+ await page.waitForFunction(()=>{const s=document.querySelector('.tl-scroller');return Math.abs(s.scrollLeft-(s.scrollWidth-s.clientWidth))<2});
+ await page.keyboard.press('Home');
+ await page.waitForFunction(()=>document.querySelector('.tl-scroller').scrollLeft===0);
+ const original=await page.locator('.clip').getAttribute('style');
+ await page.mouse.move(rect.x+400,rect.y+75);await page.mouse.wheel(0,300);
+ await page.waitForFunction(()=>document.querySelector('.tl-scroller').scrollLeft>=290);
+ assert.equal(await page.locator('.clip').getAttribute('style'),original);
+ await page.getByRole('button',{name:'＋ 轨道',exact:true}).click();
+ await page.mouse.move(rect.x+65,rect.y+80);await page.mouse.wheel(0,150);
+ await page.waitForFunction(()=>document.querySelector('.tl-scroller').scrollTop>0);
+ await page.getByRole('button',{name:'⤢ 适配',exact:true}).click();
+ await page.waitForFunction(()=>document.querySelector('.tl-scroller').scrollLeft===0);
+ console.log(JSON.stringify({mouseWheel:first,horizontalWheel:second,slider:'end/home passed',verticalTracks:'passed',clipUnchanged:true,fitReset:true}));
+ await page.screenshot({path:'/private/tmp/timeline-verified.png'});
+} finally {await browser.close()}
