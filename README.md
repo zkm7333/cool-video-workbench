@@ -24,6 +24,29 @@ STUDIO_DATA="$HOME/Movies/ShotCraft Studio" STUDIO_PORT=5296 node server/server.
 
 需要 macOS、Node.js 20 或更高版本、npm，以及用于视频渲染的 Chromium/Chrome。豆包配音需要你自己的服务凭据；网页采集、录屏和缩略图功能可能还需要额外的本机浏览器或媒体组件。`STUDIO_DATA` 可以指定数据目录，请勿将其中的工程、媒体、导出文件或凭据提交到 Git。
 
+## 演示视频与界面截图
+
+<video src="https://raw.githubusercontent.com/zkm7333/cool-video-workbench/main/docs/media/workbench-demo.mp4" controls width="100%"></video>
+
+[打开或下载演示视频 MP4](docs/media/workbench-demo.mp4)
+
+<p align="center">
+  <a href="docs/media/timeline-editor.png"><img src="docs/media/timeline-editor.png" width="49%" alt="多轨时间线剪辑界面" /></a>
+  <a href="docs/media/shot-library.png"><img src="docs/media/shot-library.png" width="49%" alt="镜头发现与模板库" /></a>
+</p>
+<p align="center"><sub>多轨视频剪辑 · 镜头发现与模板库</sub></p>
+
+<p align="center">
+  <a href="docs/media/doubao-voice.png"><img src="docs/media/doubao-voice.png" width="49%" alt="豆包配音工作界面" /></a>
+  <a href="docs/media/web-capture.png"><img src="docs/media/web-capture.png" width="49%" alt="网页素材采集界面" /></a>
+</p>
+<p align="center"><sub>豆包配音 · 网页区域采集</sub></p>
+
+<p align="center">
+  <a href="docs/media/recording-studio.png"><img src="docs/media/recording-studio.png" width="80%" alt="录屏工作台界面" /></a>
+</p>
+<p align="center"><sub>录屏工作台与指定区域录制</sub></p>
+
 ## 工作台能做什么
 
 | 阶段 | 能力 |

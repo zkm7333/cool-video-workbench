@@ -24,6 +24,29 @@ Then open <http://127.0.0.1:5296>.
 
 Requirements: macOS, Node.js 20 or later, npm, and Chromium/Chrome for video rendering. Doubao voice generation requires your own service credentials. Web capture, recording, and thumbnails may need additional local browser or media components. `STUDIO_DATA` selects the local data directory. Do not commit projects, media, rendered videos, or credentials from that directory.
 
+## Demo video and screenshots
+
+<video src="https://raw.githubusercontent.com/zkm7333/cool-video-workbench/main/docs/media/workbench-demo.mp4" controls width="100%"></video>
+
+[Open or download the MP4 demo](docs/media/workbench-demo.mp4)
+
+<p align="center">
+  <a href="docs/media/timeline-editor.png"><img src="docs/media/timeline-editor.png" width="49%" alt="Multitrack video editing timeline" /></a>
+  <a href="docs/media/shot-library.png"><img src="docs/media/shot-library.png" width="49%" alt="Shot discovery and template library" /></a>
+</p>
+<p align="center"><sub>Multitrack editing · Shot discovery and templates</sub></p>
+
+<p align="center">
+  <a href="docs/media/doubao-voice.png"><img src="docs/media/doubao-voice.png" width="49%" alt="Doubao voice-over workspace" /></a>
+  <a href="docs/media/web-capture.png"><img src="docs/media/web-capture.png" width="49%" alt="Webpage capture workspace" /></a>
+</p>
+<p align="center"><sub>Doubao voice-over · Webpage region capture</sub></p>
+
+<p align="center">
+  <a href="docs/media/recording-studio.png"><img src="docs/media/recording-studio.png" width="80%" alt="Recording studio workspace" /></a>
+</p>
+<p align="center"><sub>Recording workspace with region capture</sub></p>
+
 ## What you can do
 
 | Stage | Capabilities |
